@@ -37,7 +37,7 @@ def test_dethod(input,output):
 def test_mymeth(tesp):
 	assert tesp('required')== "PROTOTYPE required"
 	
-	pytest --cov=/registration/al/WebAPI/webapiserver/setting/controllers/ --cov-report term-missing /home/SYSROM_SRC/Pytest/UT/setting/controllers/  --cov-report=html
+	pytest --cov=/registration/al/WebAPI/webapiserver/setting/controllers/ --cov-reportt erm-missing /home/SYSROM_SRC/Pytest/UT/setting/controllers/  --cov-report=html
 	
 	
 NO OSS related changes

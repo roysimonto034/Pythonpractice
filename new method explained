@@ -1,0 +1,138 @@
+Python: __new__ magic method explained
+October 16, 2016Programming, Uncategorizedmagic-methods, python, __new__Naveen Tamanam
+Python is Object oriented language, every thing is an object in python. Python is having special type of  methods called magic methods named with preceded and trailing double underscores.
+
+When we talk about magic method __new__ we also need to talk about __init__
+
+These methods will be called when you instantiate(The process of creating instance from class is called instantiation). That is when you create instance. The magic method __new__ will be called when instance is being created. Using this method you can customize the instance creation. This is only the method which will be called first then __init__ will be called to initialize instance when you are creating instance.
+
+Method __new__ will take class reference as the first argument followed by arguments which are passed to constructor(Arguments passed to call of class to create instance). Method __new__ is responsible to create instance, so you can use this method to customize object creation. Typically method __new__ will return the created instance object reference. Method __init__ will be called once __new__ method completed execution.
+
+You can create new instance of the class by invoking the superclass’s __new__ method using super. Something like super(currentclass, cls).__new__(cls, [,….])
+
+Usual class declaration and instantiation
+
+class Foo(object):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def bar(self):
+        pass
+
+i = Foo(2, 3)
+A class implementation with __new__ method overridden
+
+class Foo(object):
+    def __new__(cls, *args, **kwargs):
+        print "Creating Instance"
+        instance = super(Foo, cls).__new__(cls, *args, **kwargs)
+        return instance
+
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def bar(self):
+        pass
+OutPut:
+
+>>> i = Foo(2, 3)
+Creating Instance
+Note:
+
+You can create instance inside __new__  method either by using super function or by directly calling __new__ method over object  Where if parent class is object. That is,
+
+instance = super(MyClass, cls).__new__(cls, *args, **kwargs)
+
+or
+
+instance = object.__new__(cls, *args, **kwargs)
+
+Things to remember
+If __new__ return instance of  it’s own class, then the __init__ method of newly created instance will be invoked with instance as first (like __init__(self, [, ….]) argument following by arguments passed to __new__ or call of class.  So, __init__ will called implicitly.
+
+If __new__ method return something else other than instance of class,  then instances __init__ method will not be invoked. In this case you have to call __init__ method yourself.
+
+Applications
+Usually it’s uncommon to override __new__ method, but some times it is required if you are writing APIs or customizing class or instance creation or abstracting something using classes.
+
+
+Singleton using __new__
+You can implement the singleton design pattern using __new__ method. Where singleton class is a class that can only have one object. That is, instance of class.
+
+Here is how you can restrict creating more than one instance by overriding __new__
+
+class Singleton(object):
+    _instance = None  # Keep instance reference
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = object.__new__(cls, *args, **kwargs)
+        return cls._instance
+It is not limited to singleton. You can also impose limit on total number created instances
+
+class LimitedInstances(object):
+    _instances = []  # Keep track of instance reference
+    limit = 5
+
+    def __new__(cls, *args, **kwargs):
+        if not len(cls._instances) <= cls.limit:
+            raise RuntimeError, "Count not create instance. Limit %s reached" % cls.limit
+        instance = object.__new__(cls, *args, **kwargs)
+        cls._instances.append(instance)
+        return instance
+
+    def __del__(self):
+        # Remove instance from _instances
+        self._instance.remove(self)
+
+
+Customize Instance Object
+You can customize the instance created and make some operations over it before initializer __init__  being called.Also you can impose restriction on instance creation based on some constraints
+
+def createInstance():
+    # Do what ever you want to determie if instance can be created
+    return True
+
+class CustomizeInstance(object):
+
+    def __new__(cls, a, b):
+        if not createInstance():
+            raise RuntimeError, "Count not create instance"
+        instance = super(CustomizeInstance, cls).__new__(cls, a, b)
+        instance.a = a
+        return instance
+
+    def __init__(self, a, b):
+        pass
+
+
+Customize Returned Object
+Usually when you instantiate class it will return the instance of that class.You can customize this behaviour and you can return some random object you want.
+
+Following  one is simple example to demonstrate that returning random object other than class instance
+
+class AbstractClass(object):
+
+    def __new__(cls, a, b):
+        instance = super(AbstractClass, cls).__new__(cls)
+        instance.__init__(a, b)
+        return 3
+
+    def __init__(self, a, b):
+        print "Initializing Instance", a, b
+Output:
+
+>>> a = AbstractClass(2, 3)
+Initializing Instance 2 3
+>>> a
+3
+Here you can see when we instantiate class it returns  3 instead of instance reference. Because we are returning 3 instead of created instance from __new__ method. We are calling __init__ explicitly.  As I mentioned above, we have to call __init__ explicitly if we are not returning instance object from __new__ method.
+
+The __new__ method is also used in conjunction with meta classes to customize class creation
+
+Conclusion
+There are many possibilities on how you can use this feature.  Mostly it is not always required to override __new__ method unless you are doing something regarding instance creation.
+
+Simplicity is better than complexity. Try to make life easier use this method only if it is necessary to use.
