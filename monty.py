@@ -1,3 +1,5 @@
+'''This is to demonstrate factory pattern class''' 
+
 class A:
 
     def method(self):
